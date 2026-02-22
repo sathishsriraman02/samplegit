@@ -1,36 +1,61 @@
 const { test, expect } = require('@playwright/test');
 
-test('Open Google and search', async ({ page }) => {
+test('Open Google and search - Advanced Test', async ({ page }) => {
 
   // Open website
   await page.goto('https://www.google.com');
 
-  // Accept cookies if visible (optional safety)
+  // Maximize window (optional)
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  // Accept cookies if visible
   const acceptButton = page.locator('button:has-text("Accept all")');
   if (await acceptButton.isVisible()) {
     await acceptButton.click();
   }
 
-  // Type in search box
+  // Verify Google title
+  await expect(page).toHaveTitle(/Google/);
+
+  // Fill search box
   await page.fill('textarea[name="q"]', 'Playwright Automation');
 
   // Press Enter
   await page.keyboard.press('Enter');
 
-  // Wait for results page to load
+  // Wait for search results
   await page.waitForSelector('h3');
 
-  // Verify results are displayed
-  const results = await page.locator('h3');
-  await expect(results.first()).toBeVisible();
+  // Verify at least 5 results exist
+  const results = page.locator('h3');
+  await expect(results).toHaveCountGreaterThan(4);
 
-  // Click first search result
+  // Scroll down
+  await page.mouse.wheel(0, 1000);
+
+  // Take screenshot of results page
+  await page.screenshot({ path: 'google-results.png', fullPage: true });
+
+  // Get text of first result
+  const firstResultText = await results.first().textContent();
+  console.log('First Result:', firstResultText);
+
+  // Click first result
   await results.first().click();
 
-  // Wait for navigation
+  // Wait for page load
   await page.waitForLoadState('load');
 
-  // Validate page title contains Playwright
-  await expect(page).toHaveTitle(/Playwright/i);
+  // Soft validation of page title
+  await expect.soft(page).toHaveTitle(/Playwright/i);
+
+  // Wait 2 seconds for demo purpose
+  await page.waitForTimeout(2000);
+
+  // Go back to Google results
+  await page.goBack();
+
+  // Verify we are back on Google results
+  await expect(page).toHaveURL(/google/);
 
 });
