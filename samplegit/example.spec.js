@@ -56,6 +56,6 @@ test('Open Google and search - Advanced Test', async ({ page }) => {
   await page.goBack();
 
   // Verify we are back on Google results
-  await expect(page).toHaveURL(/google/);
+  await expect(page).toHaveURL(/googlemaster/);
 
 });
